@@ -1,7 +1,13 @@
+import random
+
 import game_engine
 import agents
 import numpy as np
 import matplotlib.pyplot as plt
+import os  
+
+# Headless mode avoids opening many windows when benchmarking in parallel.
+#os.environ.setdefault('SDL_VIDEODRIVER', 'dummy')
 
 if __name__ == "__main__":
     #ghost order: 'Blinky', 'Pinky', 'Inky', 'Clyde'
@@ -14,15 +20,17 @@ if __name__ == "__main__":
 
     #---TP3---
     n_experiments = 30
-    search_algorithms = ['bfs', 'dfs', 'greedy', 'a_star']
-
+    #search_algorithms = ['bfs', 'dfs', 'greedy', 'a_star']
+    search_algorithms = ['dfs','greedy', 'bfs', 'a_star']
+    seed = 42
     for search_algorithm in search_algorithms:
         success_rate =0
         scores = []
         print('---search_algorithm: ', search_algorithm,'---')
         
         for experiment in range(n_experiments):
-            
+            random.seed(seed + experiment)
+            print(f"Experiment {experiment+1}/{n_experiments} with search_algorithm: {search_algorithm} seed: {seed + experiment}")
             pacman_policy = agents.pacman_reactive_agent
             ghost_policies = [agents.blinky_search_agent(search_algorithm), agents.pinky_search_agent(search_algorithm), agents.inky_search_agent(search_algorithm), agents.clyde_search_agent(search_algorithm)]
             #ghost_policies = [agents.inky_search_agent(search_algorithm)]

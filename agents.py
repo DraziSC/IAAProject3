@@ -175,6 +175,7 @@ def depth_first_search(start, goal, transition_graph):
     # Hint: you can use a stack (LIFO) data structure to implement the DFS. You can use a list and append/pop
     #  from the end to implement the stack. You should also keep track of visited nodes to avoid infinite loops. 
 
+    print("DFS: Computing path from", start, "to", goal)
     if start == goal:
         return []
 
@@ -182,8 +183,53 @@ def depth_first_search(start, goal, transition_graph):
     visited = {start}
     parent = {start: None}
 
+    print("DFS: entering stack", start, "to", goal)
     while stack:
         current = stack.pop()
+        for neighbour in transition_graph.get(current, []):
+            if neighbour in visited:
+                continue
+
+            # check if neighbour is already in stack, if it is then we don't add it again, to 
+            # avoid duplicates in the stack which can lead to longer paths and more time spent in the search
+            if neighbour in stack:
+                print("DFS: neighbour", neighbour, "already in stack, skipping")
+                continue
+
+            visited.add(neighbour)
+            parent[neighbour] = current
+
+            if neighbour == goal:
+                path = []
+                node = goal
+                while node != start:
+                    path.append(node)
+                    node = parent[node]
+                path.reverse()
+                print("DFS: path found from", start, "to", goal, ":", path)
+                return path
+            
+            stack.append(neighbour)
+
+    print("DFS: No path found from", start, "to", goal)
+    return None
+
+def greedy_search(start, goal, transition_graph):
+    #TODO: Implement the greedy search algorithm. It should return the path as a list of positions
+    # Hint: you can use a priority queue data structure to implement the greedy search. 
+    # You can use the heapq library in Python to implement the priority queue. 
+    # The priority should be based on the heuristic function, which in this case can be the Manhattan distance 
+    # from the current node to the goal. You should also keep track of visited nodes to avoid infinite loops.
+    if start == goal:
+        return []
+    
+    import heapq
+    heap = [(game_engine.manhattan_distance(start, goal), start)]
+    visited = {start}
+    parent = {start: None}
+
+    while heap:
+        _, current = heapq.heappop(heap)
         for neighbour in transition_graph.get(current, []):
             if neighbour in visited:
                 continue
@@ -200,17 +246,45 @@ def depth_first_search(start, goal, transition_graph):
                 path.reverse()
                 return path
 
-            stack.append(neighbour)
+            heapq.heappush(heap, (game_engine.manhattan_distance(neighbour, goal), neighbour))
 
-    return None
-
-def greedy_search(start, goal, transition_graph):
-    #TODO: Implement the greedy search algorithm. It should return the path as a list of positions
-    #
     return None
 
 def a_star_search(start, goal, transition_graph):
     #TODO: Implement the A* search algorithm. It should return the path as a list of positions
+    # Hint: you can use a priority queue data structure to implement the A* search. 
+    # You can use the heapq library in Python to implement the priority queue. 
+    # The priority should be based on the cost function, which is the sum of the path cost from the start node to the 
+    # current node and the heuristic function, which in this case can be the Manhattan distance from the current node to the goal. 
+    # We should also keep track of visited nodes to avoid infinite loops.
+    if start == goal:
+        return []
+    
+    import heapq
+    heap = [(0 + game_engine.manhattan_distance(start, goal), 0, start)]
+    visited = {start: 0}
+    parent = {start: None}  
+
+    while heap:
+        _, cost, current = heapq.heappop(heap)
+        if current == goal:
+            path = []
+            node = goal
+            while node != start:
+                path.append(node)
+                node = parent[node]
+            path.reverse()
+            return path
+
+        for neighbour in transition_graph.get(current, []):
+            new_cost = cost + 1  # assuming uniform cost for each step
+            if neighbour in visited and visited[neighbour] <= new_cost:
+                continue
+
+            visited[neighbour] = new_cost
+            parent[neighbour] = current
+            heapq.heappush(heap, (new_cost + game_engine.manhattan_distance(neighbour, goal), new_cost, neighbour))
+
     return None
 
 
@@ -248,7 +322,7 @@ def pinky_search_agent(search_algorithm):
         goal = min(positions_with_distance, key=lambda pd: game_engine.manhattan_distance(pd[0], start))[0] 
 
         #goal = (pacman['x'], pacman['y'])
-        print("Pinky: Computing path from", start, "to", goal)
+        #print("Pinky: Computing path from", start, "to", goal)
 
         #2.Use the compute_path function to compute the path from start to goal. The transition graph is already computed and is accessible in game_state['transition_graph']   
         path = compute_path(start, goal, game_state['transition_graph'], search_algorithm, ghost)

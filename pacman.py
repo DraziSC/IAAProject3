@@ -19,7 +19,7 @@ if __name__ == "__main__":
     #game_engine.main(pacman_policy, ghost_policies, frightened_ghost_policies, map_file='maps/originalClassic.txt')#map_file = "small-single-ghost.txt")
 
     #---TP3---
-    n_experiments = 30
+    n_experiments = 100
     search_algorithms = ['bfs', 'dfs', 'greedy', 'a_star']
     #search_algorithms = ['dfs','greedy', 'bfs', 'a_star']
     seed = 42

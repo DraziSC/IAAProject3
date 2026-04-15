@@ -1,0 +1,23 @@
+DFS performs poorly here because your ghost is solving a moving-target chase problem with replanning every tick, and DFS is the wrong search bias for that setup.
+
+Main reasons:
+
+1. DFS is not shortest-path
+It returns the first path it finds, not the best one. In a maze chase game, that often means long detours before reaching Pac-Man.
+
+2. DFS is highly order-dependent
+Neighbor expansion order in the transition graph drives behavior. Small ordering effects can produce very different paths, including awkward back-and-forth decisions.
+
+3. You replan every frame against a moving goal
+Pac-Man moves each step, so the DFS path computed at time \(t\) is stale at \(t+1\). With DFS’s unstable first-found behavior, this can cause oscillation between nearby cells.
+
+4. DFS gives weak “chase pressure”
+In pursuit, you want consistent gradient toward the target. BFS, Greedy, and especially A* provide that better:
+- BFS: shortest in unweighted grid
+- Greedy: fast, target-directed
+- A*: target-directed + path-cost aware (usually best overall here)
+
+5. Your implementation uses full recomputation
+In IAAProject3/agents.py, DFS is recomputed each decision cycle via compute_path, which amplifies the instability in dynamic scenarios.
+
+So DFS is not “wrong”; it is just mismatched to this task. It is better for exhaustive traversal, not real-time pursuit in a changing environment.

@@ -121,20 +121,50 @@ def compute_path(start, goal, transition_graph, search_algorithm, agent):
     
     return path
 
-def move_in_path(agent, game_state, path):
+def move_in_path(agent, game_state, path, search_algorithm):
     #This function is called by the search agents to move the agent with the first step in the path
 
     if path is not None and len(path) > 0:
         next_step = path.pop(0) # pop is used to remove the first element of the list and return it
 
-        if next_step[0] > agent['x']:
-            actions.go_right(agent, game_state)
-        elif next_step[0] < agent['x']:
-            actions.go_left(agent, game_state)
-        elif next_step[1] > agent['y']:
-            actions.go_down(agent, game_state)
-        elif next_step[1] < agent['y']:
-            actions.go_up(agent, game_state)
+        if(search_algorithm == 'dfs'):
+            # Create a new variable for the next step to move to, and check if it is a valid move before moving the agent.
+            # This is to avoid moving the agent in an invalid direction, which can happen with DFS if the path contains 
+            # loops or backtracking, leading to errors in the game engine and unrealistic ghost behavior.
+            valid_moves = game_engine.get_valid_directions((agent['x'], agent['y']), game_state['grid'], game_state['grid_size'])
+            move_direction = None
+            if next_step[0] > agent['x']:
+                move_direction = 'right'
+            elif next_step[0] < agent['x']:
+                move_direction = 'left'
+            elif next_step[1] > agent['y']: 
+                move_direction = 'down'
+            elif next_step[1] < agent['y']:
+                move_direction = 'up'   
+
+            #remove opposite direction of current direction from valid moves to avoid going back and forth, which can happen with DFS and lead to longer paths and more time spent in the search
+            if agent['direction'] is not None and game_engine.opposite_direction(agent['direction']) in valid_moves:
+                # dont remove opposite direction if it is the only valid move, otherwise the agent can get stuck in a corner with no valid moves and the game engine will throw an error
+                if len(valid_moves) > 1:  
+                    valid_moves.remove(game_engine.opposite_direction(agent['direction']))
+                    #print("Removed opposite direction", game_engine.opposite_direction(agent['direction']), "from valid moves to avoid going back and forth. Valid moves now: ", valid_moves)
+
+            if move_direction not in valid_moves:
+                #print("Next step in path is not a valid move for the agent, skipping move. Next step: ", next_step, "Valid moves: ", valid_moves, "move direction: ", move_direction)
+                game_engine.set_direction(agent, game_state, valid_moves[0]) # if the next step is not a valid move, move in a random valid direction to avoid getting stuck and to add some randomness to the ghost's behavior
+            else:
+                # now actually move the agent in the direction of the next step in the path
+                #print("Moving agent in direction: ", move_direction, " towards next step: ", next_step)
+                game_engine.set_direction(agent, game_state, move_direction)        
+        else:
+            if next_step[0] > agent['x']:
+                actions.go_right(agent, game_state)
+            elif next_step[0] < agent['x']:
+                actions.go_left(agent, game_state)
+            elif next_step[1] > agent['y']:
+                actions.go_down(agent, game_state)
+            elif next_step[1] < agent['y']:
+                actions.go_up(agent, game_state)
 
 
 def breadth_first_search(start, goal, transition_graph):
@@ -175,7 +205,7 @@ def depth_first_search(start, goal, transition_graph):
     # Hint: you can use a stack (LIFO) data structure to implement the DFS. You can use a list and append/pop
     #  from the end to implement the stack. You should also keep track of visited nodes to avoid infinite loops. 
 
-    print("DFS: Computing path from", start, "to", goal)
+    #print("DFS: Computing path from", start, "to", goal)
     if start == goal:
         return []
 
@@ -183,7 +213,7 @@ def depth_first_search(start, goal, transition_graph):
     visited = {start}
     parent = {start: None}
 
-    print("DFS: entering stack", start, "to", goal)
+    #print("DFS: entering stack", start, "to", goal)
     while stack:
         current = stack.pop()
         for neighbour in transition_graph.get(current, []):
@@ -192,9 +222,9 @@ def depth_first_search(start, goal, transition_graph):
 
             # check if neighbour is already in stack, if it is then we don't add it again, to 
             # avoid duplicates in the stack which can lead to longer paths and more time spent in the search
-            if neighbour in stack:
-                print("DFS: neighbour", neighbour, "already in stack, skipping")
-                continue
+            #if neighbour in stack:
+            #    print("DFS: neighbour", neighbour, "already in stack, skipping")
+            #    continue
 
             visited.add(neighbour)
             parent[neighbour] = current
@@ -206,12 +236,12 @@ def depth_first_search(start, goal, transition_graph):
                     path.append(node)
                     node = parent[node]
                 path.reverse()
-                print("DFS: path found from", start, "to", goal, ":", path)
+                #print("DFS: path found from", start, "to", goal, ":", path)
                 return path
             
             stack.append(neighbour)
 
-    print("DFS: No path found from", start, "to", goal)
+    #print("DFS: No path found from", start, "to", goal)
     return None
 
 def greedy_search(start, goal, transition_graph):
@@ -299,11 +329,15 @@ def blinky_search_agent(search_algorithm):
 
         #2.Use the compute_path function to compute the path from start to goal. The transition graph is already computed and is accessible in game_state['transition_graph']   
         path = compute_path(start, goal, game_state['transition_graph'], search_algorithm, ghost)
+        #print("Blinky: Path found from", start, "to", goal, ":", path)
         # store goal and path in ghost's state for debugging and analysis purposes
         ghost['current_goal'] = goal
         ghost['current_path'] = path
         #3.Use the move_in_path function to move the ghost in the first step of the path
-        move_in_path(ghost, game_state, path)
+        move_in_path(ghost, game_state, path, search_algorithm)
+
+        current_pos = (ghost['x'], ghost['y'])
+        #print("Blinky: Current position after moving in path:", current_pos)
     return agent
 
 
@@ -331,7 +365,7 @@ def pinky_search_agent(search_algorithm):
         ghost['current_goal'] = goal
         ghost['current_path'] = path
         #3.Use the move_in_path function to move the ghost in the first step of the path
-        move_in_path(ghost, game_state, path)
+        move_in_path(ghost, game_state, path, search_algorithm)
     return agent
 
 def inky_search_agent(search_algorithm):
@@ -357,7 +391,7 @@ def inky_search_agent(search_algorithm):
         ghost['current_goal'] = goal
         ghost['current_path'] = path
         #3.Use the move_in_path function to move the ghost in the first step of the path
-        move_in_path(ghost, game_state, path)
+        move_in_path(ghost, game_state, path, search_algorithm)
     return agent
 
 
@@ -380,7 +414,7 @@ def clyde_search_agent(search_algorithm):
         #2.Use the compute_path function to compute the path from start to goal. The transition graph is already computed and is accessible in game_state['transition_graph']   
         path = compute_path(start, goal, game_state['transition_graph'], search_algorithm, ghost)
         #3.Use the move_in_path function to move the ghost in the first step of the path
-        move_in_path(ghost, game_state, path)
+        move_in_path(ghost, game_state, path, search_algorithm)
         # store goal and path in ghost's state for debugging and analysis purposes
         ghost['current_goal'] = goal
         ghost['current_path'] = path
@@ -411,6 +445,6 @@ def run_away_from_pacman_search(search_algorithm):
   
         path = compute_path(start, goal, game_state['transition_graph'], search_algorithm, ghost)
         #3.Use the move_in_path function to move the ghost in the first step of the path
-        move_in_path(ghost, game_state, path)
+        move_in_path(ghost, game_state, path, search_algorithm)
         
     return agent

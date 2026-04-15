@@ -7,8 +7,8 @@ pygame.init()
 
 # Constants
 WINDOW_WIDTH, WINDOW_HEIGHT = 600, 600
-FPS = 2
-VISUALIZE = True
+FPS = 0
+VISUALIZE = False
 
 
 #SCARED_GHOST_TIME = 10 #seconds
@@ -365,10 +365,23 @@ def main(pacman_policy, ghost_policies, frightened_ghost_policies, map_file = "o
     else:
         print("Game Over! Score:", game_state['score'])
     pygame.quit()
-    return game_state
+    return game_state, game_state['won']
     
 def set_direction(agent, game_state, dir):
     agent_pos = (agent['x'], agent['y'])
     if dir in get_valid_directions(agent_pos, game_state['grid'], game_state['grid_size']):
         agent['previous_direction'] = agent['direction']
         agent['direction'] = dir
+
+def get_direction(pos1, pos2):
+    if pos2[0] > pos1[0]:
+        return 'right'
+    elif pos2[0] < pos1[0]:
+        return 'left'
+    elif pos2[1] > pos1[1]:
+        return 'down'
+    elif pos2[1] < pos1[1]:
+        return 'up'
+    else:
+        return None
+

@@ -25,7 +25,9 @@ if __name__ == "__main__":
             
             pacman_policy = agents.pacman_reactive_agent
             ghost_policies = [agents.blinky_search_agent(search_algorithm), agents.pinky_search_agent(search_algorithm), agents.inky_search_agent(search_algorithm), agents.clyde_search_agent(search_algorithm)]
+            #ghost_policies = [agents.inky_search_agent(search_algorithm)]
             frightened_ghost_policies = [agents.run_away_from_pacman_search(search_algorithm) for _ in range(4)]
+            #frightened_ghost_policies = [agents.run_away_from_pacman_search(search_algorithm) for _ in range(1)]
             game_state = game_engine.main(pacman_policy, ghost_policies, frightened_ghost_policies, map_file='maps/originalClassic.txt')
 
             

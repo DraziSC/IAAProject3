@@ -223,3 +223,13 @@ def noisy_ghost_position_sensor(game_state, ind_ghost, prob):
                 if (x,y) != (game_state['ghosts'][ind_ghost]['x'], game_state['ghosts'][ind_ghost]['y']) and x>=0 and x<len(game_state['grid'][0]) and y>=0 and y<len(game_state['grid']) and game_state['grid'][y][x] != game_engine.WALL:
                     candidates.append((x,y))
         return random.choice(candidates)
+    
+def pacman_distance_to_position(game_state, position):
+    pacman = game_state['pacman']
+
+    pacman_pos = (game_state['pacman']['x'], game_state['pacman']['y'])
+
+    # check distance between pacman and the most likely ghost position
+    distance = game_engine.manhattan_distance(pacman_pos, position)
+
+    return distance

@@ -4,6 +4,7 @@ import pacman_perceptions
 import random
 import numpy as np
 import actions
+from collections import deque
 
 def keyboard_controller(game_state):
     direction = None
@@ -137,15 +138,75 @@ def move_in_path(agent, game_state, path):
 
 
 def breadth_first_search(start, goal, transition_graph):
-    #TODO: Implement the breadth-first search algorithm. It should return the path as a list of positions
+    # Breadth-first search returning the sequence of positions from start to goal,
+    # excluding the start position so move_in_path can consume the next step.
+    print("BFS: Computing path from", start, "to", goal)
+    if start == goal:
+        return []
+
+    queue = deque([start])
+    visited = {start}
+    parent = {start: None}
+
+    while queue:
+        current = queue.popleft()
+        for neighbour in transition_graph.get(current, []):
+            if neighbour in visited:
+                continue
+
+            visited.add(neighbour)
+            parent[neighbour] = current
+
+            if neighbour == goal:
+                path = []
+                node = goal
+                while node != start:
+                    path.append(node)
+                    node = parent[node]
+                path.reverse()
+                return path
+
+            queue.append(neighbour)
+
     return None
 
 def depth_first_search(start, goal, transition_graph):
     #TODO: Implement the depth-first search algorithm. It should return the path as a list of positions
+    # Hint: you can use a stack (LIFO) data structure to implement the DFS. You can use a list and append/pop
+    #  from the end to implement the stack. You should also keep track of visited nodes to avoid infinite loops. 
+
+    if start == goal:
+        return []
+
+    stack = [start]
+    visited = {start}
+    parent = {start: None}
+
+    while stack:
+        current = stack.pop()
+        for neighbour in transition_graph.get(current, []):
+            if neighbour in visited:
+                continue
+
+            visited.add(neighbour)
+            parent[neighbour] = current
+
+            if neighbour == goal:
+                path = []
+                node = goal
+                while node != start:
+                    path.append(node)
+                    node = parent[node]
+                path.reverse()
+                return path
+
+            stack.append(neighbour)
+
     return None
 
 def greedy_search(start, goal, transition_graph):
     #TODO: Implement the greedy search algorithm. It should return the path as a list of positions
+    #
     return None
 
 def a_star_search(start, goal, transition_graph):
@@ -157,35 +218,63 @@ def blinky_search_agent(search_algorithm):
     def agent(ghost, game_state):
         #TODO: Implement the search agent for Blinky
         #1.Define the start and goal positions (as tuples of x,y)
-                
+        start = (ghost['x'], ghost['y'])
+        pacman = game_state['pacman']
+        goal = (pacman['x'], pacman['y'])
+        print("Blinky: Computing path from", start, "to", goal)
+
         #2.Use the compute_path function to compute the path from start to goal. The transition graph is already computed and is accessible in game_state['transition_graph']   
-        
+        path = compute_path(start, goal, game_state['transition_graph'], search_algorithm, ghost)
+        # store goal and path in ghost's state for debugging and analysis purposes
+        ghost['current_goal'] = goal
+        ghost['current_path'] = path
         #3.Use the move_in_path function to move the ghost in the first step of the path
-        pass
+        move_in_path(ghost, game_state, path)
     return agent
 
 
 def pinky_search_agent(search_algorithm):
     def agent(ghost, game_state):
-        #TODO: Implement the search agent for Pinky. 
         #1.Define the start and goal positions (as tuples of x,y)
-                
-        #2.Use the compute_path function to compute the path from start to goal. The transition graph is already computed and is accessible in game_state['transition_graph']  
-        
+        start = (ghost['x'], ghost['y'])
+        pacman = game_state['pacman']
+        goal = (pacman['x'], pacman['y'])
+        print("Pinky: Computing path from", start, "to", goal)
+
+        #2.Use the compute_path function to compute the path from start to goal. The transition graph is already computed and is accessible in game_state['transition_graph']   
+        path = compute_path(start, goal, game_state['transition_graph'], search_algorithm, ghost)
+
+        # store goal and path in ghost's state for debugging and analysis purposes
+        ghost['current_goal'] = goal
+        ghost['current_path'] = path
         #3.Use the move_in_path function to move the ghost in the first step of the path
-        pass
+        move_in_path(ghost, game_state, path)
     return agent
 
 def inky_search_agent(search_algorithm):
     def agent(ghost, game_state):
         #TODO: Implement the search agent for Inky
-
         #1.Define the start and goal positions (as tuples of x,y)
-                
-        #2.Use the compute_path function to compute the path from start to goal. The transition graph is already computed and is accessible in game_state['transition_graph']  
-        
+        start = (ghost['x'], ghost['y'])
+        # Goal will be a random position in the transition graph, to add some randomness to Inky's behaviour and differentiate it from Blinky and Pinky, which will always target pacman's current position. This is a simple way to add some unpredictability to Inky's behaviour, which can be turned on or off by changing the definition of the goal.
+        # if goal is equal to start then pick a new random
+
+        current_goal = ghost.get('current_goal')
+        if current_goal is not None and current_goal != start:
+            goal = current_goal
+        else:
+            goal = random.choice(list(game_state['transition_graph'].keys()))
+
+        print("Inky: Computing path from", start, "to", goal)
+
+        #2.Use the compute_path function to compute the path from start to goal. The transition graph is already computed and is accessible in game_state['transition_graph']   
+        path = compute_path(start, goal, game_state['transition_graph'], search_algorithm, ghost)
+
+        # store goal and path in ghost's state for debugging and analysis purposes
+        ghost['current_goal'] = goal
+        ghost['current_path'] = path
         #3.Use the move_in_path function to move the ghost in the first step of the path
-        pass
+        move_in_path(ghost, game_state, path)
     return agent
 
 
@@ -193,11 +282,18 @@ def clyde_search_agent(search_algorithm):
     def agent(ghost, game_state):
         #TODO: Implement the search agent for Clyde
         #1.Define the start and goal positions (as tuples of x,y)
-                
-        #2.Use the compute_path function to compute the path from start to goal. The transition graph is already computed and is accessible in game_state['transition_graph']  
-        
+        start = (ghost['x'], ghost['y'])
+        pacman = game_state['pacman']
+        goal = (pacman['x'], pacman['y'])
+        print("Clyde: Computing path from", start, "to", goal)
+
+        #2.Use the compute_path function to compute the path from start to goal. The transition graph is already computed and is accessible in game_state['transition_graph']   
+        path = compute_path(start, goal, game_state['transition_graph'], search_algorithm, ghost)
         #3.Use the move_in_path function to move the ghost in the first step of the path
-        pass
+        move_in_path(ghost, game_state, path)
+        # store goal and path in ghost's state for debugging and analysis purposes
+        ghost['current_goal'] = goal
+        ghost['current_path'] = path
     return agent
     
     
@@ -205,10 +301,26 @@ def run_away_from_pacman_search(search_algorithm):
     def agent(ghost, game_state):
         #TODO: Implement the search agent for running away from pacman (used by all the ghosts in the frightened state)
 
-        #1.Define the start and goal positions (as tuples of x,y)
-                
-                #2.Use the compute_path function to compute the path from start to goal. The transition graph is already computed and is accessible in game_state['transition_graph']  
-        
+        #1.Define the start and goal positions (as tuples of x,y
+        # start is the current position of the ghost
+        start = (ghost['x'], ghost['y'])
+        # Goal will be further distance from pacman, so we can define it as the position in the transition graph 
+        # that is furthest from pacman, which we can find by iterating over all the positions in the transition graph 
+        # and computing their distance to pacman, and taking the one with the maximum distance. This is a simple way to 
+        # define a goal for running away from pacman.
+        pacman = game_state['pacman']
+        max_distance = -1
+        goal = start
+        for pos in game_state['transition_graph'].keys():
+            distance = pacman_perceptions.pacman_distance_to_position(game_state, pos)
+            if distance > max_distance:
+                max_distance = distance
+                goal = pos
+        print("Run away: Computing path from", start, "to", goal)
+        #2.Use the compute_path function to compute the path from start to goal. The transition graph is already computed and is accessible in game_state['transition_graph']   
+  
+        path = compute_path(start, goal, game_state['transition_graph'], search_algorithm, ghost)
         #3.Use the move_in_path function to move the ghost in the first step of the path
-        pass
+        move_in_path(ghost, game_state, path)
+        
     return agent

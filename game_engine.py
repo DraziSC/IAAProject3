@@ -7,7 +7,7 @@ pygame.init()
 
 # Constants
 WINDOW_WIDTH, WINDOW_HEIGHT = 600, 600
-FPS = 5
+FPS = 15
 VISUALIZE = True
 
 

@@ -140,7 +140,7 @@ def move_in_path(agent, game_state, path):
 def breadth_first_search(start, goal, transition_graph):
     # Breadth-first search returning the sequence of positions from start to goal,
     # excluding the start position so move_in_path can consume the next step.
-    print("BFS: Computing path from", start, "to", goal)
+    #"print("BFS: Computing path from", start, "to", goal)
     if start == goal:
         return []
 
@@ -221,7 +221,7 @@ def blinky_search_agent(search_algorithm):
         start = (ghost['x'], ghost['y'])
         pacman = game_state['pacman']
         goal = (pacman['x'], pacman['y'])
-        print("Blinky: Computing path from", start, "to", goal)
+        #print("Blinky: Computing path from", start, "to", goal)
 
         #2.Use the compute_path function to compute the path from start to goal. The transition graph is already computed and is accessible in game_state['transition_graph']   
         path = compute_path(start, goal, game_state['transition_graph'], search_algorithm, ghost)
@@ -238,7 +238,16 @@ def pinky_search_agent(search_algorithm):
         #1.Define the start and goal positions (as tuples of x,y)
         start = (ghost['x'], ghost['y'])
         pacman = game_state['pacman']
-        goal = (pacman['x'], pacman['y'])
+        # find all positions in the transition graph that are within 4 steps of pacman, and choose the one that is 
+        # closest to pinky as the goal. This will make pinky try to cut off pacman by targeting a position in front of him, 
+        # rather than directly targeting pacman's current position like blinky.
+        all_positions = list(game_state['transition_graph'].keys())
+        positions_with_distance = [(pos, game_engine.manhattan_distance(pos, (pacman['x'], pacman['y']))) for pos in all_positions]
+        positions_with_distance = [pd for pd in positions_with_distance if pd[1] <= 4]
+        
+        goal = min(positions_with_distance, key=lambda pd: game_engine.manhattan_distance(pd[0], start))[0] 
+
+        #goal = (pacman['x'], pacman['y'])
         print("Pinky: Computing path from", start, "to", goal)
 
         #2.Use the compute_path function to compute the path from start to goal. The transition graph is already computed and is accessible in game_state['transition_graph']   
@@ -265,7 +274,7 @@ def inky_search_agent(search_algorithm):
         else:
             goal = random.choice(list(game_state['transition_graph'].keys()))
 
-        print("Inky: Computing path from", start, "to", goal)
+        #print("Inky: Computing path from", start, "to", goal)
 
         #2.Use the compute_path function to compute the path from start to goal. The transition graph is already computed and is accessible in game_state['transition_graph']   
         path = compute_path(start, goal, game_state['transition_graph'], search_algorithm, ghost)
@@ -284,8 +293,15 @@ def clyde_search_agent(search_algorithm):
         #1.Define the start and goal positions (as tuples of x,y)
         start = (ghost['x'], ghost['y'])
         pacman = game_state['pacman']
-        goal = (pacman['x'], pacman['y'])
-        print("Clyde: Computing path from", start, "to", goal)
+        # if distance to pacman is greater than 5 then goal is pacman's position, else goal 
+        # is a random position in the transition graph, to add some randomness to Clyde's behaviour and differentiate it from the other ghosts, which will always target pacman's current position. This is a simple way to add some unpredictability to Clyde's behaviour, which can be turned on or off by changing the definition of the goal.
+        distance_to_pacman = game_engine.manhattan_distance(start, (pacman['x'], pacman['y']))
+        if distance_to_pacman > 5:
+            goal = (pacman['x'], pacman['y'])
+        else:
+            goal = random.choice(list(game_state['transition_graph'].keys()))
+
+        #print("Clyde: Computing path from", start, "to", goal)
 
         #2.Use the compute_path function to compute the path from start to goal. The transition graph is already computed and is accessible in game_state['transition_graph']   
         path = compute_path(start, goal, game_state['transition_graph'], search_algorithm, ghost)
@@ -316,7 +332,7 @@ def run_away_from_pacman_search(search_algorithm):
             if distance > max_distance:
                 max_distance = distance
                 goal = pos
-        print("Run away: Computing path from", start, "to", goal)
+        #print("Run away: Computing path from", start, "to", goal)
         #2.Use the compute_path function to compute the path from start to goal. The transition graph is already computed and is accessible in game_state['transition_graph']   
   
         path = compute_path(start, goal, game_state['transition_graph'], search_algorithm, ghost)

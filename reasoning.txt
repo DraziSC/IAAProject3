@@ -21,3 +21,31 @@ In pursuit, you want consistent gradient toward the target. BFS, Greedy, and esp
 In IAAProject3/agents.py, DFS is recomputed each decision cycle via compute_path, which amplifies the instability in dynamic scenarios.
 
 So DFS is not “wrong”; it is just mismatched to this task. It is better for exhaustive traversal, not real-time pursuit in a changing environment.
+
+
+BFS Best???
+It usually is not better overall. It is better only in specific conditions.
+
+When BFS is better:
+1. Uniform-cost moves and small map size.
+2. You care about guaranteed shortest path length.
+3. You want stable, predictable behavior independent of heuristic quality.
+4. Your heuristic for Greedy or A* is weak/misleading for the map structure.
+
+When Greedy is better:
+1. You want fast decisions.
+2. “Good enough” paths are fine.
+3. You can tolerate non-optimal paths and occasional detours.
+
+When A* is better:
+1. You want shortest paths like BFS, but faster on larger maps.
+2. You have a decent heuristic (Manhattan is usually good in grids).
+3. You want a strong balance of speed and path quality.
+
+So the key point:
+- BFS: safest baseline, optimal in unweighted grids, but explores a lot.
+- Greedy: fastest, but can be quite wrong.
+- A*: usually the best practical choice if the heuristic is reasonable.
+
+If you are seeing unstable chase behavior, BFS can appear “better” because it is deterministic and shortest-path correct, 
+while Greedy can be erratic and A* can also look unstable if you fully replan every tick against a moving target.

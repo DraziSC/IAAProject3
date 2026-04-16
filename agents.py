@@ -174,25 +174,35 @@ def breadth_first_search(start, goal, transition_graph):
     if start == goal:
         return []
 
+    # first initialize the queue with the start position, and a visited set to keep track of visited nodes, 
+    # and a parent dictionary to reconstruct the path once we reach the goal
     queue = deque([start])
     visited = {start}
     parent = {start: None}
 
     while queue:
+        # pop the first position from the queue and check if it is the goal, if it is then reconstruct the path using the parent dictionary and return it
         current = queue.popleft()
+        # if it is not the goal, then add its unvisited neighbours to the queue and mark them as visited, and set their parent to the current position
         for neighbour in transition_graph.get(current, []):
+            # if the neighbour has already been visited, then skip it to avoid infinite loops and redundant processing
             if neighbour in visited:
                 continue
-
+            
+            # now add the neighbour to the visited set and the queue, and set its parent to the current position
             visited.add(neighbour)
             parent[neighbour] = current
 
+            # if the neighbour is the goal, then reconstruct the path using the parent dictionary and return it. The path should be a list of 
+            # positions from start to goal, excluding the start position so move_in_path can consume the next step.
             if neighbour == goal:
                 path = []
                 node = goal
+                # reconstruct the path by following the parent pointers from the goal back to the start, and then reverse it to get the path from start to goal
                 while node != start:
                     path.append(node)
                     node = parent[node]
+                # reverse the path to get the correct order from start to goal, and return it
                 path.reverse()
                 return path
 
@@ -209,13 +219,16 @@ def depth_first_search(start, goal, transition_graph):
     if start == goal:
         return []
 
+    # first initialize the stack with the start position, and a visited set to keep track of visited nodes,
     stack = [start]
     visited = {start}
     parent = {start: None}
 
     #print("DFS: entering stack", start, "to", goal)
     while stack:
+        # pop the last position from the stack and check if it is the goal, if it is then reconstruct the path using the parent dictionary and return it
         current = stack.pop()
+        # if it is not the goal, then add its unvisited neighbours to the stack and mark them as visited, and set their parent to the current position
         for neighbour in transition_graph.get(current, []):
             if neighbour in visited:
                 continue
@@ -229,9 +242,11 @@ def depth_first_search(start, goal, transition_graph):
             visited.add(neighbour)
             parent[neighbour] = current
 
+            # if the neighbour is the goal, then reconstruct the path using the parent dictionary and return it. The path should be a list of
             if neighbour == goal:
                 path = []
                 node = goal
+                # reconstruct the path by following the parent pointers from the goal back to the start, and then reverse it to get the path from start to goal
                 while node != start:
                     path.append(node)
                     node = parent[node]
@@ -246,19 +261,23 @@ def depth_first_search(start, goal, transition_graph):
 
 def greedy_search(start, goal, transition_graph):
     #TODO: Implement the greedy search algorithm. It should return the path as a list of positions
-    # Hint: you can use a priority queue data structure to implement the greedy search. 
-    # You can use the heapq library in Python to implement the priority queue. 
+    # use a priority queue data structure to implement the greedy search. 
+    # use the heapq library in Python to implement the priority queue. 
     # The priority should be based on the heuristic function, which in this case can be the Manhattan distance 
     # from the current node to the goal. You should also keep track of visited nodes to avoid infinite loops.
     if start == goal:
         return []
     
     import heapq
+    # the heap will store tuples of (priority, position), where priority is the Manhattan distance from the position to the goal. The heap is initialized with the 
+    # start position and its priority, which is the Manhattan distance from the start
     heap = [(game_engine.manhattan_distance(start, goal), start)]
     visited = {start}
     parent = {start: None}
 
     while heap:
+        # pop the position with the lowest priority (the one estimated to be closest to the goal based on the heuristic function) from the heap 
+        # and check if it is the goal, if it is then reconstruct the path using the parent dictionary and return it
         _, current = heapq.heappop(heap)
         for neighbour in transition_graph.get(current, []):
             if neighbour in visited:
@@ -267,35 +286,47 @@ def greedy_search(start, goal, transition_graph):
             visited.add(neighbour)
             parent[neighbour] = current
 
+            # if the neighbour is the goal, then reconstruct the path using the parent dictionary and return it. The path should be a list of positions 
+            # from start to goal, excluding the start position so move_in_path can consume the next step.
             if neighbour == goal:
                 path = []
                 node = goal
                 while node != start:
                     path.append(node)
                     node = parent[node]
+                # reverse the path to get the correct order from start to goal, and return it
                 path.reverse()
                 return path
-
+            # the priority is based on the heuristic function, which in this case can be the Manhattan distance from the current node to the goal. the prioirity queue is sorted
+            #  by the priority, so the node with the lowest priority will be popped first, which is the node that is estimated to be closest to the goal based on the 
+            # heuristic function. In case of ties in the priority, the node that was added to the heap first will be popped first, which can lead to different 
+            # paths being explored and can affect the performance of the algorithm.
             heapq.heappush(heap, (game_engine.manhattan_distance(neighbour, goal), neighbour))
 
     return None
 
 def a_star_search(start, goal, transition_graph):
     #TODO: Implement the A* search algorithm. It should return the path as a list of positions
-    # Hint: you can use a priority queue data structure to implement the A* search. 
-    # You can use the heapq library in Python to implement the priority queue. 
+    # use a priority queue data structure to implement the A* search. 
+    # use the heapq library in Python to implement the priority queue. 
     # The priority should be based on the cost function, which is the sum of the path cost from the start node to the 
-    # current node and the heuristic function, which in this case can be the Manhattan distance from the current node to the goal. 
+    # current node and the heuristic function, which in this case will be the Manhattan distance from the current node to the goal. 
     # We should also keep track of visited nodes to avoid infinite loops.
     if start == goal:
         return []
     
     import heapq
+
+    # the heap will store tuples of (priority, cost, position), where priority is the sum of the path cost from the start node to the current node and the
+    #  heuristic function, which in this case will be the Manhattan distance from the current node to the goal. The heap is initialized with the start position, 
+    # its priority, which is the Manhattan distance from the start, and its cost, which is 0.
     heap = [(0 + game_engine.manhattan_distance(start, goal), 0, start)]
     visited = {start: 0}
     parent = {start: None}  
 
     while heap:
+        # pop the position with the lowest priority (the one estimated to be closest to the goal based on the heuristic function and the path cost) from the heap 
+        # and check if it is the goal, if it is then reconstruct the path using the parent dictionary and return it .
         _, cost, current = heapq.heappop(heap)
         if current == goal:
             path = []
@@ -303,6 +334,7 @@ def a_star_search(start, goal, transition_graph):
             while node != start:
                 path.append(node)
                 node = parent[node]
+            # reverse the path to get the correct order from start to goal, and return it
             path.reverse()
             return path
 
@@ -313,6 +345,10 @@ def a_star_search(start, goal, transition_graph):
 
             visited[neighbour] = new_cost
             parent[neighbour] = current
+            # the priority is the sum of the path cost from the start node to the current node and the heuristic function, which in this case will be the Manhattan distance 
+            # from the current node to the goal. the prioirity queue is sorted by the priority, so the node with the lowest priority will be popped first, 
+            # which is the node that is estimated to be closest to the goal based on the heuristic function and the path cost. In case of ties in the priority,
+            # the node that was added to the heap first will be popped first, which can lead to different paths being explored and can affect the performance of the algorithm.
             heapq.heappush(heap, (new_cost + game_engine.manhattan_distance(neighbour, goal), new_cost, neighbour))
 
     return None

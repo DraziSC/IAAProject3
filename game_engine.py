@@ -360,10 +360,12 @@ def main(pacman_policy, ghost_policies, frightened_ghost_policies, map_file = "o
         clock.tick(FPS)
         game_state['time_step'] += 1
 
+    """
     if game_state['won']:
         print("You won! Score:", game_state['score'])       
     else:
         print("Game Over! Score:", game_state['score'])
+    """
     pygame.quit()
     return game_state, game_state['won']
     

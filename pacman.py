@@ -29,11 +29,11 @@ if __name__ == "__main__":
         success_rate =0
         scores = []
         ghost_results = [] # list to store ghost path lengths, no path found rate, stationary rate and moving rate for each ghost and each search algorithm for later analysis and plotting
-        print('---search_algorithm: ', search_algorithm,'---')
+        #print('---search_algorithm: ', search_algorithm,'---')
         
         for experiment in range(n_experiments):
             random.seed(seed + experiment)
-            print(f"Experiment {experiment+1}/{n_experiments} with search_algorithm: {search_algorithm} seed: {seed + experiment}")
+            #print(f"Experiment {experiment+1}/{n_experiments} with search_algorithm: {search_algorithm} seed: {seed + experiment}")
             pacman_policy = agents.pacman_reactive_agent
             ghost_policies = [agents.blinky_search_agent(search_algorithm), agents.pinky_search_agent(search_algorithm), agents.inky_search_agent(search_algorithm), agents.clyde_search_agent(search_algorithm)]
             #ghost_policies = [agents.inky_search_agent(search_algorithm)]
@@ -45,7 +45,7 @@ if __name__ == "__main__":
                 success_rate += 1
 
             for ghost in game_state['ghosts']:
-                print(ghost['name'], 'mean path lengths: ', np.mean(ghost['path_lengths']), 'no path found rate: ', ghost['no_path_found']/game_state['time_step'], 'stationary rate: ', ghost['stationary']/game_state['time_step'], 'moving rate: ', ghost['moving']/game_state['time_step'])
+                #print(ghost['name'], 'mean path lengths: ', np.mean(ghost['path_lengths']), 'no path found rate: ', ghost['no_path_found']/game_state['time_step'], 'stationary rate: ', ghost['stationary']/game_state['time_step'], 'moving rate: ', ghost['moving']/game_state['time_step'])
                 # store the ghost path lengths, no path found rate, stationary rate and moving rate in a list for each ghost and each search algorithm for later analysis and plotting also store the search algorithm used for each ghost
                 ghost_results.append((ghost['name'], search_algorithm, np.mean(ghost['path_lengths']), ghost['no_path_found']/game_state['time_step'], ghost['stationary']/game_state['time_step'], ghost['moving']/game_state['time_step']))
 

@@ -264,7 +264,7 @@ def greedy_search(start, goal, transition_graph):
     # use a priority queue data structure to implement the greedy search. 
     # use the heapq library in Python to implement the priority queue. 
     # The priority should be based on the heuristic function, which in this case can be the Manhattan distance 
-    # from the current node to the goal. You should also keep track of visited nodes to avoid infinite loops.
+    # from the current node to the goal. Also keep track of visited nodes to avoid infinite loops.
     if start == goal:
         return []
     
@@ -311,7 +311,7 @@ def a_star_search(start, goal, transition_graph):
     # use the heapq library in Python to implement the priority queue. 
     # The priority should be based on the cost function, which is the sum of the path cost from the start node to the 
     # current node and the heuristic function, which in this case will be the Manhattan distance from the current node to the goal. 
-    # We should also keep track of visited nodes to avoid infinite loops.
+    # Also keep track of visited nodes to avoid infinite loops.
     if start == goal:
         return []
     
